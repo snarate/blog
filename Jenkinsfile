@@ -25,6 +25,22 @@ node {
         sh "./mvnw -ntp com.github.eirslett:frontend-maven-plugin:npm"
     }
 
+    stage('quality analysis') {
+        withSonarQubeEnv('MySonarServer') {
+            sh "./mvnw -ntp initialize sonar:sonar"
+        }
+    }
+
+    stage('Sonar Analysis') {
+        try {
+            sh "./mvnw -ntp sonar:sonar"
+        } catch(err) {
+            throw err
+        } finally {
+            echo 'Sonar Analysis Finally block executed....'
+        }
+    }
+
     stage('backend tests') {
         try {
             sh "./mvnw -ntp verify -P-webpack"
@@ -45,14 +61,12 @@ node {
         }
     }
 
+
+
+    /*
     stage('packaging') {
         sh "./mvnw -ntp verify -P-webpack deploy -Pprod -DskipTests"
         archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
-    }
-    stage('quality analysis') {
-        withSonarQubeEnv('sonar') {
-            sh "./mvnw -ntp initialize sonar:sonar"
-        }
     }
 
     def dockerImage
@@ -61,4 +75,5 @@ node {
         // https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin#authentication-methods
         sh "./mvnw -ntp jib:build"
     }
+    */
 }
